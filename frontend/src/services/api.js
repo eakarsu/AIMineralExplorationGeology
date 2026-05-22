@@ -151,6 +151,26 @@ export const aiGeophysicsInterp      = (body) => request('/ai/geophysics-interpr
 export const aiResourceStatement     = (body) => request('/ai/resource-statement-draft',  { method: 'POST', body: JSON.stringify(body || {}) });
 export const aiJurisdictionalRisk    = (body) => request('/ai/jurisdictional-risk',       { method: 'POST', body: JSON.stringify(body || {}) });
 
+// apply pass 7 — backlog AI verbs
+export const aiLithologyClassify       = (body) => request('/ai/lithology-classify',        { method: 'POST', body: JSON.stringify(body || {}) });
+export const aiProspectivityScore      = (body) => request('/ai/prospectivity-score',       { method: 'POST', body: JSON.stringify(body || {}) });
+export const aiResourceBlockConfidence = (body) => request('/ai/resource-block-confidence', { method: 'POST', body: JSON.stringify(body || {}) });
+export const aiAssayAnomalyNarrate     = (body) => request('/ai/assay-anomaly-narrate',     { method: 'POST', body: JSON.stringify(body || {}) });
+
+// 3D block-model
+export const getBlockModel   = (property_id) => request(`/ai/block-model?property_id=${encodeURIComponent(property_id)}`);
+export const buildBlockModel = (body) => request('/ai/block-model', { method: 'POST', body: JSON.stringify(body || {}) });
+
+// Claim ledger (immutable history)
+export const claimLedgerApi = {
+  list:      (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return request(`/claim-ledger${qs ? '?' + qs : ''}`);
+  },
+  byClaim:   (claim_id) => request(`/claim-ledger/by-claim/${encodeURIComponent(claim_id)}`),
+  create:    (d) => request('/claim-ledger', { method: 'POST', body: JSON.stringify(d) }),
+};
+
 // AI history
 export const getAIHistory = (feature, limit = 25) => {
   const qs = new URLSearchParams({

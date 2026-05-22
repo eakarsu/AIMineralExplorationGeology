@@ -222,6 +222,39 @@ const SAMPLES = {
     { label: 'Papua NG (Highlands)',           values: { country: 'Papua NG' } },
     { label: 'Mongolia (Gobi REE)',            values: { country: 'Mongolia' } },
   ],
+
+  // ── apply pass 7 ──────────────────────────────────────────────
+  'lithology-classify': [
+    { label: 'DDH-HAW-001 — Hawkeye Au logs',     values: { hole_id: 'DDH-HAW-001' } },
+    { label: 'DDH-ATC-001 — Atacama porphyry',    values: { hole_id: 'DDH-ATC-001' } },
+    { label: 'DDH-LAP-001 — Lapland Ni-Cu-PGE',   values: { hole_id: 'DDH-LAP-001' } },
+    { label: 'DDH-MBL-001 — Marble Bar pegmatite',values: { hole_id: 'DDH-MBL-001' } },
+    { label: 'DDH-GOB-001 — Gobi carbonatite',    values: { hole_id: 'DDH-GOB-001' } },
+  ],
+
+  'prospectivity-score': [
+    { label: 'Hawkeye Au — full multi-signal',  values: { property_id: 'PROP-CA-001' } },
+    { label: 'Atacama Cu-Mo porphyry',          values: { property_id: 'PROP-CL-005' } },
+    { label: 'Red Caribou — discovery',         values: { property_id: 'PROP-CA-002' } },
+    { label: 'Lapland Ni-Cu-PGE',               values: { property_id: 'PROP-FI-011' } },
+    { label: 'Gobi REE carbonatite',            values: { property_id: 'PROP-MN-013' } },
+  ],
+
+  'resource-block-confidence': [
+    { label: 'Hawkeye maiden — block confidence',     values: { property_id: 'PROP-CA-001' } },
+    { label: 'Atacama Cu-Mo — block confidence',      values: { property_id: 'PROP-CL-005' } },
+    { label: 'Carajas Iron — measured uplift check',  values: { property_id: 'PROP-BR-007' } },
+    { label: 'Bushveld PGE — measured',               values: { property_id: 'PROP-ZA-010' } },
+    { label: 'Salta Li brine — inferred',             values: { property_id: 'PROP-AR-012' } },
+  ],
+
+  'assay-anomaly-narrate': [
+    { label: 'DDH-HAW-001 — Au batch narrative',  values: { hole_id: 'DDH-HAW-001', element: 'Au' } },
+    { label: 'DDH-ATC-001 — Cu batch narrative',  values: { hole_id: 'DDH-ATC-001', element: 'Cu' } },
+    { label: 'DDH-LAP-001 — Ni batch narrative',  values: { hole_id: 'DDH-LAP-001', element: 'Ni' } },
+    { label: 'DDH-MBL-001 — Li batch narrative',  values: { hole_id: 'DDH-MBL-001', element: 'Li' } },
+    { label: 'DDH-GOB-001 — REE batch narrative', values: { hole_id: 'DDH-GOB-001', element: 'REE' } },
+  ],
 };
 
 // GET /api/ai/samples?feature=<verb>
@@ -551,5 +584,210 @@ router.post('/jurisdictional-risk', async (req, res) => {
     res.json(result);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
+
+// ─────────────────────────────────────────────────────────────
+// apply pass 7 — backlog endpoints
+// ─────────────────────────────────────────────────────────────
+
+// 17. POST /api/ai/lithology-classify { hole_id?, property_id? }
+router.post('/lithology-classify', async (req, res) => {
+  try {
+    const { hole_id, property_id } = req.body || {};
+    let { logs } = req.body || {};
+    if (!Array.isArray(logs) || logs.length === 0) {
+      if (hole_id) {
+        const r = await pool.query('SELECT * FROM geological_logs WHERE hole_id = $1 ORDER BY from_m ASC LIMIT 200', [hole_id]);
+        logs = r.rows;
+      } else if (property_id) {
+        const r = await pool.query(
+          'SELECT g.* FROM geological_logs g JOIN drill_holes h ON h.hole_id = g.hole_id WHERE h.property_id = $1 ORDER BY g.id ASC LIMIT 200',
+          [property_id]
+        );
+        logs = r.rows;
+      } else {
+        const r = await pool.query('SELECT * FROM geological_logs ORDER BY id ASC LIMIT 60');
+        logs = r.rows;
+      }
+    }
+    const result = await ai.lithologyClassify(logs, { hole_id, property_id });
+    await record('lithology-classify', { hole_id, property_id, n: logs.length }, result);
+    res.json(result);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 18. POST /api/ai/prospectivity-score { property_id }
+router.post('/prospectivity-score', async (req, res) => {
+  try {
+    const { property_id } = req.body || {};
+    if (!property_id) return res.status(400).json({ error: 'property_id is required' });
+    const [p, holes, assays, geophys, geochem, logs, targets] = await Promise.all([
+      pool.query('SELECT * FROM properties WHERE property_id = $1', [property_id]),
+      pool.query('SELECT * FROM drill_holes WHERE property_id = $1', [property_id]),
+      pool.query('SELECT a.* FROM assay_results a JOIN drill_holes h ON h.hole_id = a.hole_id WHERE h.property_id = $1 LIMIT 200', [property_id]),
+      pool.query('SELECT * FROM geophysics_surveys WHERE property_id = $1', [property_id]),
+      pool.query('SELECT * FROM geochem_samples WHERE property_id = $1', [property_id]),
+      pool.query('SELECT g.* FROM geological_logs g JOIN drill_holes h ON h.hole_id = g.hole_id WHERE h.property_id = $1 LIMIT 100', [property_id]),
+      pool.query('SELECT * FROM drill_targets WHERE property_id = $1', [property_id]),
+    ]);
+    const signals = {
+      property: p.rows[0] || { property_id },
+      drill_hole_count: holes.rows.length,
+      assay_signal: {
+        n: assays.rows.length,
+        max_value: assays.rows.reduce((m, r) => Math.max(m, Number(r.value_ppm) || 0), 0),
+        elements: Array.from(new Set(assays.rows.map((r) => r.element))).filter(Boolean),
+      },
+      geophysics_signal: { n: geophys.rows.length, methods: geophys.rows.map((r) => r.method) },
+      geochem_signal:    { n: geochem.rows.length, types: geochem.rows.map((r) => r.type) },
+      structural_signal: { n: logs.rows.length, structures: logs.rows.map((r) => r.structure).filter(Boolean).slice(0, 30) },
+      target_signal:     { n: targets.rows.length, priorities: targets.rows.map((r) => r.priority) },
+    };
+    const result = await ai.prospectivityScore(signals, { property_id });
+    await record('prospectivity-score', { property_id }, result);
+    res.json(result);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 19. POST /api/ai/resource-block-confidence { property_id }
+router.post('/resource-block-confidence', async (req, res) => {
+  try {
+    const { property_id } = req.body || {};
+    if (!property_id) return res.status(400).json({ error: 'property_id is required' });
+    const [p, estimates, holes] = await Promise.all([
+      pool.query('SELECT * FROM properties WHERE property_id = $1', [property_id]),
+      pool.query('SELECT * FROM ndp_resource_estimates WHERE property_id = $1 ORDER BY id ASC', [property_id]),
+      pool.query('SELECT * FROM drill_holes WHERE property_id = $1', [property_id]),
+    ]);
+    const ctx = { property: p.rows[0] || { property_id }, drill_hole_count: holes.rows.length };
+    const result = await ai.resourceBlockConfidence(estimates.rows, ctx);
+    await record('resource-block-confidence', { property_id, n: estimates.rows.length }, result);
+    res.json(result);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 20. POST /api/ai/assay-anomaly-narrate { hole_id?, property_id?, element? }
+router.post('/assay-anomaly-narrate', async (req, res) => {
+  try {
+    const { hole_id, property_id, element } = req.body || {};
+    let { assays } = req.body || {};
+    if (!Array.isArray(assays) || assays.length === 0) {
+      const where = [];
+      const params = [];
+      if (hole_id)    { params.push(hole_id);    where.push(`hole_id = $${params.length}`); }
+      if (element)    { params.push(element);    where.push(`element = $${params.length}`); }
+      let q = 'SELECT * FROM assay_results';
+      if (property_id) {
+        params.push(property_id);
+        q = `SELECT a.* FROM assay_results a JOIN drill_holes h ON h.hole_id = a.hole_id WHERE h.property_id = $${params.length}`;
+        if (where.length) q += ' AND ' + where.map((w) => 'a.' + w).join(' AND ');
+      } else if (where.length) {
+        q += ' WHERE ' + where.join(' AND ');
+      }
+      q += ' ORDER BY from_m ASC LIMIT 200';
+      const r = await pool.query(q, params);
+      assays = r.rows;
+    }
+    const result = await ai.assayAnomalyNarrate(assays, { hole_id, property_id, element });
+    await record('assay-anomaly-narrate', { hole_id, property_id, element, n: assays.length }, result);
+    res.json(result);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ─────────────────────────────────────────────────────────────
+// 3D block-model — NEEDS-PRODUCT-DECISION implemented as coarse grid
+// GET  /api/ai/block-model?property_id=...
+// POST /api/ai/block-model { property_id, nx?, ny?, nz?, block_size_m?, commodity? }
+//   POST builds a synthetic coarse grid from the property's assays
+//   (assay max grade per hole used as seed), persists it, returns the grid.
+// ─────────────────────────────────────────────────────────────
+function synthesizeBlockGrid({ nx, ny, nz, holes, assays }) {
+  // Build voxel grid nz[ny[nx]] with grades derived from nearest hole.
+  // Coarse, deterministic — purely for visual demo / 2D heatmap fallback.
+  const grid = [];
+  // Project holes into the (nx,ny) plane evenly by index.
+  const holePts = holes.map((h, i) => ({
+    ix: holes.length ? Math.floor((i / Math.max(holes.length, 1)) * nx) : 0,
+    iy: holes.length ? (i % Math.max(1, ny)) : 0,
+    grade: (() => {
+      const a = assays.filter((x) => x.hole_id === h.hole_id);
+      const m = a.reduce((mx, r) => Math.max(mx, Number(r.value_ppm) || 0), 0);
+      return m || 0;
+    })(),
+  }));
+  const maxGrade = holePts.reduce((m, p) => Math.max(m, p.grade), 0) || 1;
+  for (let z = 0; z < nz; z++) {
+    const plane = [];
+    for (let y = 0; y < ny; y++) {
+      const row = [];
+      for (let x = 0; x < nx; x++) {
+        let best = 0;
+        for (const p of holePts) {
+          const d = Math.sqrt((p.ix - x) ** 2 + (p.iy - y) ** 2);
+          // Inverse-distance falloff + depth attenuation
+          const falloff = 1 / (1 + d * d);
+          const depthAtt = 1 - Math.abs(z - nz / 2) / nz;
+          const v = p.grade * falloff * depthAtt;
+          if (v > best) best = v;
+        }
+        row.push(Number((best / maxGrade).toFixed(4)));
+      }
+      plane.push(row);
+    }
+    grid.push(plane);
+  }
+  return grid;
+}
+
+router.get('/block-model', async (req, res) => {
+  try {
+    const { property_id } = req.query;
+    if (!property_id) return res.status(400).json({ error: 'property_id is required' });
+    const r = await pool.query(
+      'SELECT * FROM block_models WHERE property_id = $1 ORDER BY id DESC LIMIT 1',
+      [property_id]
+    );
+    if (!r.rows.length) return res.status(404).json({ error: 'no block model — POST to /api/ai/block-model to build one' });
+    res.json(r.rows[0]);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+router.post('/block-model', async (req, res) => {
+  try {
+    const { property_id, commodity } = req.body || {};
+    const nx = Math.max(4, Math.min(40, parseInt(req.body?.nx, 10) || 20));
+    const ny = Math.max(4, Math.min(40, parseInt(req.body?.ny, 10) || 20));
+    const nz = Math.max(2, Math.min(20, parseInt(req.body?.nz, 10) || 10));
+    const block_size_m = Number(req.body?.block_size_m) || 25;
+    if (!property_id) return res.status(400).json({ error: 'property_id is required' });
+
+    const [holes, assays] = await Promise.all([
+      pool.query('SELECT * FROM drill_holes WHERE property_id = $1 ORDER BY id ASC', [property_id]),
+      pool.query('SELECT a.* FROM assay_results a JOIN drill_holes h ON h.hole_id = a.hole_id WHERE h.property_id = $1', [property_id]),
+    ]);
+    const grid = synthesizeBlockGrid({ nx, ny, nz, holes: holes.rows, assays: assays.rows });
+    const model_id = `BM-${property_id}-${Date.now()}`;
+    const r = await pool.query(
+      `INSERT INTO block_models (model_id, property_id, commodity, nx, ny, nz, block_size_m, grid, source, notes)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
+      [model_id, property_id, commodity || null, nx, ny, nz, block_size_m, JSON.stringify(grid),
+       'synthetic-from-assays', `Coarse synthetic grid from ${holes.rows.length} holes / ${assays.rows.length} assays`]
+    );
+    res.status(201).json(r.rows[0]);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ─────────────────────────────────────────────────────────────
+// External geophysical feeds — NEEDS-CREDS, served as 503 stubs.
+// ─────────────────────────────────────────────────────────────
+function externalFeedStub(req, res) {
+  res.status(503).json({
+    error: 'external feed not configured',
+    feed: req.params.feed || req.path.replace(/^\//, ''),
+    reason: 'NEEDS-CREDS — set the corresponding API key / endpoint in .env to enable',
+    docs: 'See backend/services/ai.js for the canonical credentials pattern',
+  });
+}
+router.get('/external-feeds/:feed', externalFeedStub);
+router.post('/external-feeds/:feed', externalFeedStub);
 
 module.exports = router;

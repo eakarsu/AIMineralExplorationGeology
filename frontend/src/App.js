@@ -42,6 +42,15 @@ import AIGeophysicsInterpretationPage from './pages/AIGeophysicsInterpretationPa
 import AIResourceStatementPage        from './pages/AIResourceStatementPage';
 import AIJurisdictionalRiskPage       from './pages/AIJurisdictionalRiskPage';
 
+// apply pass 7 — backlog pages
+import AILithologyClassifyPage        from './pages/AILithologyClassifyPage';
+import AIProspectivityScorePage       from './pages/AIProspectivityScorePage';
+import AIResourceBlockConfidencePage  from './pages/AIResourceBlockConfidencePage';
+import AIAssayAnomalyNarratePage      from './pages/AIAssayAnomalyNarratePage';
+import BlockModelViewerPage           from './pages/BlockModelViewerPage';
+import ClaimLedgerPage                from './pages/ClaimLedgerPage';
+import CoreChainCustodyPage           from './pages/CoreChainCustodyPage';
+
 // Admin
 import WebhooksPage from './pages/WebhooksPage';
 
@@ -52,6 +61,9 @@ import LoginPage from './pages/LoginPage';
 import { getToken } from './services/api';
 
 import './App.css';
+
+import CodexCustomVizFeature from './pages/CodexCustomVizFeature';
+import CodexOperationsFeature from './pages/CodexOperationsFeature';
 
 function RequireAuth({ children }) {
   const location = useLocation();
@@ -69,6 +81,9 @@ function ShellRoutes() {
         <Topbar />
         <div style={{ padding: '24px 32px' }}>
           <Routes>
+        <Route path="/codex/custom-viz" element={<CodexCustomVizFeature />} />
+        <Route path="/codex/operations" element={<CodexOperationsFeature />} />
+
             <Route path="/" element={<Dashboard />} />
 
             <Route path="/properties"               element={<PropertiesPage />} />
@@ -106,6 +121,15 @@ function ShellRoutes() {
             <Route path="/ai/geophysics-interpretation"  element={<AIGeophysicsInterpretationPage />} />
             <Route path="/ai/resource-statement-draft"   element={<AIResourceStatementPage />} />
             <Route path="/ai/jurisdictional-risk"        element={<AIJurisdictionalRiskPage />} />
+
+            {/* apply pass 7 — backlog routes */}
+            <Route path="/ai/lithology-classify"         element={<AILithologyClassifyPage />} />
+            <Route path="/ai/prospectivity-score"        element={<AIProspectivityScorePage />} />
+            <Route path="/ai/resource-block-confidence" element={<AIResourceBlockConfidencePage />} />
+            <Route path="/ai/assay-anomaly-narrate"      element={<AIAssayAnomalyNarratePage />} />
+            <Route path="/block-model"                   element={<BlockModelViewerPage />} />
+            <Route path="/claim-ledger"                  element={<ClaimLedgerPage />} />
+            <Route path="/core-chain-custody"            element={<CoreChainCustodyPage />} />
 
             <Route path="/webhooks" element={<WebhooksPage />} />
 

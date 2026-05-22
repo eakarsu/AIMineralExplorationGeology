@@ -6,8 +6,9 @@ import { logout, getStoredUser } from '../services/api';
 // Overview / Properties / Drilling / Geophysics / Geochem / Permits / Stakeholders /
 // Resources / Governance / AI Exploration / AI Reporting / Admin
 const PROPERTIES_LINKS = [
-  { to: '/properties',  label: 'Properties' },
-  { to: '/claims',      label: 'Claims' },
+  { to: '/properties',    label: 'Properties' },
+  { to: '/claims',        label: 'Claims' },
+  { to: '/claim-ledger',  label: 'Claim Ledger' },
 ];
 
 const DRILLING_LINKS = [
@@ -51,22 +52,26 @@ const AI_EXPLORATION_LINKS = [
   { to: '/ai/anomaly-cluster',           label: 'AI · Anomaly Cluster' },
   { to: '/ai/drill-target-rank',         label: 'AI · Drill Target Rank' },
   { to: '/ai/assay-trend',               label: 'AI · Assay Trend' },
+  { to: '/ai/assay-anomaly-narrate',     label: 'AI · Assay Anomaly Narrator' },
   { to: '/ai/geochem-pathfinder-detect', label: 'AI · Geochem Pathfinder' },
   { to: '/ai/geophysics-interpretation', label: 'AI · Geophysics Interp.' },
+  { to: '/ai/lithology-classify',        label: 'AI · Lithology Classifier' },
+  { to: '/ai/prospectivity-score',       label: 'AI · Prospectivity Scorer' },
   { to: '/ai/geologist-shift-plan',      label: 'AI · Geologist Shift Plan' },
   { to: '/ai/vendor-quote-compare',      label: 'AI · Vendor Quote Compare' },
   { to: '/ai/exploration-budget',        label: 'AI · Exploration Budget' },
 ];
 
 const AI_REPORTING_LINKS = [
-  { to: '/ai/executive-brief',          label: 'AI · Executive Brief' },
-  { to: '/ai/ndp-43-101-summary',       label: 'AI · NI 43-101 Summary' },
-  { to: '/ai/resource-statement-draft', label: 'AI · Resource Statement' },
-  { to: '/ai/permit-readiness',         label: 'AI · Permit Readiness' },
-  { to: '/ai/environmental-risk-brief', label: 'AI · Environmental Risk' },
+  { to: '/ai/executive-brief',           label: 'AI · Executive Brief' },
+  { to: '/ai/ndp-43-101-summary',        label: 'AI · NI 43-101 Summary' },
+  { to: '/ai/resource-statement-draft',  label: 'AI · Resource Statement' },
+  { to: '/ai/resource-block-confidence', label: 'AI · Block Confidence' },
+  { to: '/ai/permit-readiness',          label: 'AI · Permit Readiness' },
+  { to: '/ai/environmental-risk-brief',  label: 'AI · Environmental Risk' },
   { to: '/ai/indigenous-engagement-plan',label: 'AI · Indigenous Plan' },
-  { to: '/ai/partner-pitch-draft',      label: 'AI · Partner Pitch' },
-  { to: '/ai/jurisdictional-risk',      label: 'AI · Jurisdictional Risk' },
+  { to: '/ai/partner-pitch-draft',       label: 'AI · Partner Pitch' },
+  { to: '/ai/jurisdictional-risk',       label: 'AI · Jurisdictional Risk' },
 ];
 
 export default function Sidebar() {
@@ -133,6 +138,7 @@ export default function Sidebar() {
 
       <div className="sidebar-group-label">Custom Views</div>
       <NavLink to="/custom-views">Exploration Views</NavLink>
+      <NavLink to="/block-model">3D Block Model</NavLink>
 
       <div className="sidebar-group-label">Admin</div>
       <NavLink to="/webhooks">Webhooks</NavLink>

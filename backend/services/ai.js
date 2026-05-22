@@ -441,6 +441,109 @@ async function jurisdictionalRisk(country, propertyContext = {}) {
   return safeJsonParse(r, { summary: typeof r === 'string' ? r : 'No response', drivers: [] });
 }
 
+// ─────────────────────────────────────────────────────────────
+// 17. lithology-classify — classify geological log intervals
+// ─────────────────────────────────────────────────────────────
+async function lithologyClassify(logs = [], context = {}) {
+  const sys = `${SYSTEM_PROMPT} Classify drill-log intervals into lithology + alteration tags + confidence. Return strict JSON:
+{
+  "classifications": [{
+    "log_id": string,
+    "hole_id": string,
+    "from_m": number,
+    "to_m": number,
+    "primary_lithology": string,
+    "secondary_lithology": string,
+    "alteration_tags": [string],
+    "structure_tags": [string],
+    "confidence": number,
+    "rationale": string
+  }],
+  "lithology_summary": [{ "lithology": string, "interval_count": number, "total_m": number }],
+  "qaqc_flags": [string],
+  "summary": string
+}`;
+  const usr = `Geological logs:\n${JSON.stringify(logs, null, 2)}\n\nContext:\n${JSON.stringify(context)}`;
+  const r = await callOpenRouter(sys, usr);
+  return safeJsonParse(r, { summary: typeof r === 'string' ? r : 'No response', classifications: [] });
+}
+
+// ─────────────────────────────────────────────────────────────
+// 18. prospectivity-score — multi-signal property prospectivity
+// ─────────────────────────────────────────────────────────────
+async function prospectivityScore(signals = {}, context = {}) {
+  const sys = `${SYSTEM_PROMPT} Compute a prospectivity score for a property using assay, geophysics, geochem and structural signals. Return strict JSON:
+{
+  "property": string,
+  "score": number,
+  "score_band": "low"|"moderate"|"high"|"very_high",
+  "signal_contributions": [{ "signal": string, "weight": number, "evidence": string }],
+  "deposit_model_candidates": [{ "model": string, "fit": "weak"|"moderate"|"strong" }],
+  "recommended_next_steps": [string],
+  "data_gaps": [string],
+  "summary": string
+}`;
+  const usr = `Signals:\n${JSON.stringify(signals, null, 2)}\n\nContext:\n${JSON.stringify(context)}`;
+  const r = await callOpenRouter(sys, usr);
+  return safeJsonParse(r, { summary: typeof r === 'string' ? r : 'No response', signal_contributions: [] });
+}
+
+// ─────────────────────────────────────────────────────────────
+// 19. resource-block-confidence — per-block Inferred/Indicated/Measured
+// ─────────────────────────────────────────────────────────────
+async function resourceBlockConfidence(estimates = [], context = {}) {
+  const sys = `${SYSTEM_PROMPT} Assess per-block resource-category confidence. For each estimate block, return its NI 43-101 / JORC category with drivers. Return strict JSON:
+{
+  "property": string,
+  "blocks": [{
+    "estimate_id": string,
+    "current_category": string,
+    "assessed_category": "Inferred"|"Indicated"|"Measured",
+    "confidence": number,
+    "drivers": [{ "factor": string, "impact": "supports"|"weakens", "narrative": string }],
+    "drill_spacing_assessment": string,
+    "qaqc_assessment": string,
+    "category_change_recommended": boolean,
+    "rationale": string
+  }],
+  "category_rollup": [{ "category": string, "tonnes": number, "grade": number }],
+  "qp_caveats": [string],
+  "summary": string
+}`;
+  const usr = `Estimates:\n${JSON.stringify(estimates, null, 2)}\n\nContext:\n${JSON.stringify(context)}`;
+  const r = await callOpenRouter(sys, usr);
+  return safeJsonParse(r, { summary: typeof r === 'string' ? r : 'No response', blocks: [] });
+}
+
+// ─────────────────────────────────────────────────────────────
+// 20. assay-anomaly-narrate — narrative report for an assay batch
+// ─────────────────────────────────────────────────────────────
+async function assayAnomalyNarrate(assays = [], context = {}) {
+  const sys = `${SYSTEM_PROMPT} Generate a narrative anomaly report for a batch of assay results. Return strict JSON:
+{
+  "batch_label": string,
+  "n_assays": number,
+  "headline": string,
+  "anomalies": [{
+    "assay_id": string,
+    "hole_id": string,
+    "interval": string,
+    "element": string,
+    "value_ppm": number,
+    "anomaly_class": "background"|"weakly_anomalous"|"anomalous"|"strongly_anomalous"|"bonanza",
+    "narrative": string
+  }],
+  "elemental_associations": [{ "elements": [string], "pattern": string }],
+  "drill_followup_suggestions": [string],
+  "qaqc_concerns": [string],
+  "narrative_report": string,
+  "summary": string
+}`;
+  const usr = `Assay batch:\n${JSON.stringify(assays, null, 2)}\n\nContext:\n${JSON.stringify(context)}`;
+  const r = await callOpenRouter(sys, usr);
+  return safeJsonParse(r, { summary: typeof r === 'string' ? r : 'No response', anomalies: [] });
+}
+
 module.exports = {
   callOpenRouter,
   safeJsonParse,
@@ -460,4 +563,8 @@ module.exports = {
   geophysicsInterpretation,
   resourceStatementDraft,
   jurisdictionalRisk,
+  lithologyClassify,
+  prospectivityScore,
+  resourceBlockConfidence,
+  assayAnomalyNarrate,
 };

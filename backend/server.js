@@ -163,6 +163,10 @@ app.use('/api/dashboard', require('./routes/dashboard'));
 // Custom Exploration Views (4 specialized visualizations)
 app.use('/api/custom-views', require('./routes/customViews'));
 
+// ── apply pass 7 — claim transfer / ledger history ──
+app.use('/api/claim-ledger', require('./routes/claimLedger'));
+app.use('/api/core-chain-custody', require('./routes/coreChainCustody'));
+
 app.listen(PORT, () => {
   console.log(`\nAI Mineral Exploration Geology API running on http://localhost:${PORT}\n`);
 });
