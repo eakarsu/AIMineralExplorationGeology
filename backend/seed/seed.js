@@ -3,13 +3,11 @@ const path = require('path');
 const { Pool } = require('pg');
 require('dotenv').config({ path: path.join(__dirname, '..', '..', '.env') });
 
-const pool = new Pool({
-  host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_PORT || 5432,
-  database: process.env.DB_NAME || 'mineral_exploration',
-  user: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || 'postgres',
-});
+if (process.env.NODE_ENV === 'production' || process.env.ALLOW_DEMO_SEED !== 'true') {
+  throw new Error('Destructive demo seeding requires non-production NODE_ENV and ALLOW_DEMO_SEED=true');
+}
+if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is required');
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 async function run() {
   const client = await pool.connect();

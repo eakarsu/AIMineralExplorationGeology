@@ -75,6 +75,8 @@ async function request(url, options = {}) {
   return data;
 }
 
+export const apiFetch = request;
+
 // Generic CRUD factory
 function crud(base) {
   return {

@@ -3,30 +3,17 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET, authenticateToken } = require('../middleware/auth');
 const pool = require('../config/database');
-
-// Fallback demo admin used when the users table is unavailable
-// (e.g. before the migration is applied). Never overwritten anywhere.
-const DEMO_USER = {
-  id: 1,
-  email: 'admin@minexplore.io',
-  password: 'admin123',
-  name: 'Admin',
-  role: 'admin',
-};
+const { verifyPassword } = require('../services/passwords');
 
 async function findDbUser(email, password) {
-  try {
-    const r = await pool.query(
-      'SELECT id, email, password, name, role FROM users WHERE email = $1 LIMIT 1',
-      [email]
-    );
-    if (!r.rows.length) return null;
-    const u = r.rows[0];
-    if (u.password !== password) return null;
-    return { id: u.id, email: u.email, name: u.name, role: u.role };
-  } catch (e) {
-    return null;
-  }
+  const r = await pool.query(
+    'SELECT id, email, name, role, tenant_id, password_hash FROM users WHERE lower(email) = lower($1) LIMIT 1',
+    [email]
+  );
+  if (!r.rows.length) return null;
+  const u = r.rows[0];
+  if (!u.password_hash || !(await verifyPassword(password, u.password_hash))) return null;
+  return { id: u.id, email: u.email, name: u.name, role: u.role, tenantId: u.tenant_id };
 }
 
 // POST /api/auth/login
@@ -37,19 +24,7 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'email and password are required' });
     }
 
-    let user = await findDbUser(email, password);
-
-    if (!user) {
-      // Hardcoded demo commander still works even if users table missing
-      if (email === DEMO_USER.email && password === DEMO_USER.password) {
-        user = {
-          id: DEMO_USER.id,
-          email: DEMO_USER.email,
-          name: DEMO_USER.name,
-          role: DEMO_USER.role,
-        };
-      }
-    }
+    const user = await findDbUser(email, password);
 
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password' });
@@ -59,18 +34,23 @@ router.post('/login', async (req, res) => {
     res.json({ token, user });
   } catch (e) {
     console.error('Login error:', e);
-    res.status(500).json({ error: 'Server error' });
+    res.status(503).json({ error: 'Authentication service unavailable' });
   }
 });
 
 // GET /api/auth/me
-router.get('/me', authenticateToken, (req, res) => {
-  res.json({
-    id: req.user.id,
-    email: req.user.email,
-    name: req.user.name,
-    role: req.user.role,
-  });
+router.get('/me', authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT id, email, name, role, tenant_id AS "tenantId" FROM users WHERE id = $1 AND tenant_id = $2',
+      [req.user.id, req.user.tenantId]
+    );
+    if (!result.rows.length) return res.status(404).json({ error: 'User not found' });
+    return res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Current user error:', error);
+    return res.status(503).json({ error: 'Authentication service unavailable' });
+  }
 });
 
 // GET /api/auth/users  (commander only)

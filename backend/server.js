@@ -99,12 +99,14 @@ function wireOnCreated(router, hook) {
 }
 
 const app = express();
-const PORT = process.env.BACKEND_PORT || 3081;
+const PORT = Number(process.env.BACKEND_PORT);
+if (!Number.isInteger(PORT) || PORT < 1) throw new Error('BACKEND_PORT is required');
 
 // Middleware
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:3080,http://localhost:3081,http://localhost:3000')
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
   .split(',').map((o) => o.trim()).filter(Boolean);
+if (allowedOrigins.length === 0) throw new Error('ALLOWED_ORIGINS is required');
 app.use(cors({
   origin: (origin, cb) => {
     if (!origin) return cb(null, true);
@@ -166,6 +168,12 @@ app.use('/api/custom-views', require('./routes/customViews'));
 // ── apply pass 7 — claim transfer / ledger history ──
 app.use('/api/claim-ledger', require('./routes/claimLedger'));
 app.use('/api/core-chain-custody', require('./routes/coreChainCustody'));
+app.use('/api/exploration-workflow', require('./routes/explorationWorkflow'));
+
+app.use(/^\/api\/(?:gap-|external-feeds)/, (req,res,next) => {
+  if (process.env.ENABLE_EXPERIMENTAL_ROUTES === 'true') return next();
+  return res.status(501).json({error:'Generated/provider-backed surface is quarantined',required:'ENABLE_EXPERIMENTAL_ROUTES=true plus documented provider configuration'});
+});
 
 app.listen(PORT, () => {
   console.log(`\nAI Mineral Exploration Geology API running on http://localhost:${PORT}\n`);
