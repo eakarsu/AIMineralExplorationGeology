@@ -1,38 +1,9 @@
 // AI helper service for AI Mineral Exploration Geology
-// Reads OPENROUTER_API_KEY and OPENROUTER_MODEL from:
-//   1. this project's .env (already loaded by server.js)
-//   2. fallback: /Users/erolakarsu/projects/beauty-wellness-ai/.env (canonical source)
-// Never overwrites or wipes credentials.
-
-const fs = require('fs');
-
-const FALLBACK_ENV = '/Users/erolakarsu/projects/beauty-wellness-ai/.env';
-
-function readFallbackEnv() {
-  try {
-    if (!fs.existsSync(FALLBACK_ENV)) return {};
-    const raw = fs.readFileSync(FALLBACK_ENV, 'utf8');
-    const out = {};
-    for (const line of raw.split('\n')) {
-      const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);
-      if (!m) continue;
-      let val = m[2];
-      if (val.startsWith('"') && val.endsWith('"')) val = val.slice(1, -1);
-      if (val.startsWith("'") && val.endsWith("'")) val = val.slice(1, -1);
-      out[m[1]] = val;
-    }
-    return out;
-  } catch (e) {
-    console.warn('[ai] fallback env read failed:', e.message);
-    return {};
-  }
-}
-
 function getOpenRouterCreds() {
-  const fb = readFallbackEnv();
-  const key = process.env.OPENROUTER_API_KEY || fb.OPENROUTER_API_KEY || '';
-  const model = process.env.OPENROUTER_MODEL || fb.OPENROUTER_MODEL || 'anthropic/claude-haiku-4.5';
-  return { key, model };
+  const key = process.env.OPENROUTER_API_KEY || '';
+  const model = process.env.OPENROUTER_MODEL || 'anthropic/claude-haiku-4.5';
+  const baseUrl = new URL(process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1');
+  return { key, model, baseUrl };
 }
 
 const SYSTEM_PROMPT =
@@ -45,7 +16,7 @@ const SYSTEM_PROMPT =
 
 function callOpenRouter(systemPrompt, userPrompt) {
   return new Promise((resolve) => {
-    const { key, model } = getOpenRouterCreds();
+    const { key, model, baseUrl } = getOpenRouterCreds();
     if (!key) {
       return resolve({ error: 'OPENROUTER_API_KEY not configured' });
     }
@@ -61,8 +32,10 @@ function callOpenRouter(systemPrompt, userPrompt) {
     });
 
     const options = {
-      hostname: 'openrouter.ai',
-      path: '/api/v1/chat/completions',
+      protocol: baseUrl.protocol,
+      hostname: baseUrl.hostname,
+      port: baseUrl.port || undefined,
+      path: `${baseUrl.pathname.replace(/\/$/, '')}/chat/completions`,
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
