@@ -88,6 +88,10 @@ if [ -z "${ALLOWED_ORIGINS:-}" ]; then
   if [ "${NODE_ENV:-}" = test ]; then export ALLOWED_ORIGINS="http://127.0.0.1:$FRONTEND_PORT"; else echo 'ALLOWED_ORIGINS is required.' >&2; exit 1; fi
 fi
 for d in backend/node_modules frontend/node_modules; do [ -d "$d" ] || { echo "Missing $d; prepare dependencies per OPERATIONS.md." >&2; exit 1; }; done
+if [ "${NODE_ENV:-development}" != production ] && [ "${ENABLE_DEMO_CREDENTIAL_AUTOFILL:-true}" = true ]; then
+  psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f backend/migrations/004_secure_identity.sql >/dev/null
+  BOOTSTRAP_ACKNOWLEDGEMENT=create-initial-admin node backend/scripts/create-admin.js
+fi
 for port in "$BACKEND_PORT" "$FRONTEND_PORT"; do if lsof -ti ":$port" >/dev/null 2>&1; then echo "Port $port is occupied; refusing to terminate another process." >&2; exit 1; fi; done
 pids=(); cleanup(){ for pid in "${pids[@]}"; do kill "$pid" 2>/dev/null || true; done; for pid in "${pids[@]}"; do wait "$pid" 2>/dev/null || true; done; }; trap cleanup EXIT INT TERM
 (cd backend && BACKEND_PORT="$BACKEND_PORT" npm start) & pids+=("$!"); (cd frontend && PORT="$FRONTEND_PORT" BROWSER=none REACT_APP_API_BASE="http://127.0.0.1:${BACKEND_PORT}/api" npm start) & pids+=("$!"); wait "${pids[@]}"
