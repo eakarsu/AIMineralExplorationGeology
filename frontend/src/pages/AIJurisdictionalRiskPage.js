@@ -12,7 +12,7 @@ export default function AIJurisdictionalRiskPage() {
         { key: 'country',     label: 'Country',     placeholder: 'e.g. Canada' },
         { key: 'property_id', label: 'Property ID (optional)', placeholder: 'e.g. PROP-CA-001' },
       ]}
-      run={(v) => aiJurisdictionalRisk({ country: v.country, property_id: v.property_id || undefined })}
+      run={(v, requestOptions) => aiJurisdictionalRisk({ country: v.country, property_id: v.property_id || undefined }, requestOptions)}
     />
   );
 }

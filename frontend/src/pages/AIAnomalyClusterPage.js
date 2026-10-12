@@ -13,7 +13,7 @@ export default function AIAnomalyClusterPage() {
           type: 'textarea',
           placeholder: 'e.g. Bias toward epithermal Au pathfinders (As, Sb, Hg) in the Hawkeye district.' },
       ]}
-      run={(v) => aiAnomalyCluster({ context: { notes: v.context_notes } })}
+      run={(v, requestOptions) => aiAnomalyCluster({ context: { notes: v.context_notes } }, requestOptions)}
     />
   );
 }

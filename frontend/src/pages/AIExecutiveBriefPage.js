@@ -12,7 +12,7 @@ export default function AIExecutiveBriefPage() {
         { key: 'notes', label: 'Bias / Focus Notes', type: 'textarea',
           placeholder: 'e.g. Bias toward battery metals (Li, Ni, Co) and permitting risk.' },
       ]}
-      run={(v) => aiExecutiveBrief({ notes: v.notes })}
+      run={(v, requestOptions) => aiExecutiveBrief({ notes: v.notes }, requestOptions)}
     />
   );
 }

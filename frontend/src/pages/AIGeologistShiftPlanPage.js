@@ -14,7 +14,7 @@ export default function AIGeologistShiftPlanPage() {
         { key: 'notes',            label: 'Notes / Bias', type: 'textarea',
           placeholder: 'Bias toward gold properties, Q3 drill push.' },
       ]}
-      run={(v) => aiGeologistShiftPlan({ rotation_pattern: v.rotation_pattern, notes: v.notes })}
+      run={(v, requestOptions) => aiGeologistShiftPlan({ rotation_pattern: v.rotation_pattern, notes: v.notes }, requestOptions)}
     />
   );
 }

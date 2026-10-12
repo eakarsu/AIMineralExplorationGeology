@@ -11,7 +11,7 @@ export default function AIResourceStatementPage() {
       inputs={[
         { key: 'property_id', label: 'Property ID', placeholder: 'e.g. PROP-CA-001' },
       ]}
-      run={(v) => aiResourceStatement({ property_id: v.property_id })}
+      run={(v, requestOptions) => aiResourceStatement({ property_id: v.property_id }, requestOptions)}
     />
   );
 }

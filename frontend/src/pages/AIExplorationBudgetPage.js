@@ -13,7 +13,7 @@ export default function AIExplorationBudgetPage() {
         { key: 'objective',   label: 'Objective', type: 'textarea',
           placeholder: 'e.g. Phase II 5,000 m drill program + maiden NI 43-101 inferred resource within 14 months.' },
       ]}
-      run={(v) => aiExplorationBudget({ property_id: v.property_id || undefined, objective: v.objective })}
+      run={(v, requestOptions) => aiExplorationBudget({ property_id: v.property_id || undefined, objective: v.objective }, requestOptions)}
     />
   );
 }

@@ -14,7 +14,7 @@ export default function AIAssayTrendPage() {
           type: 'select',
           options: ['Au','Ag','Cu','Mo','Ni','Co','Li','Pt','Pd','Fe','REE','Zn','Pb'] },
       ]}
-      run={(v) => aiAssayTrend({ hole_id: v.hole_id || undefined, element: v.element || undefined })}
+      run={(v, requestOptions) => aiAssayTrend({ hole_id: v.hole_id || undefined, element: v.element || undefined }, requestOptions)}
     />
   );
 }

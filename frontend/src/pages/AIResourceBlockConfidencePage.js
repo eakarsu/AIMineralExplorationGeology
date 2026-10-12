@@ -11,7 +11,7 @@ export default function AIResourceBlockConfidencePage() {
       inputs={[
         { key: 'property_id', label: 'Property ID', placeholder: 'e.g. PROP-CA-001' },
       ]}
-      run={(v) => aiResourceBlockConfidence({ property_id: v.property_id })}
+      run={(v, requestOptions) => aiResourceBlockConfidence({ property_id: v.property_id }, requestOptions)}
     />
   );
 }

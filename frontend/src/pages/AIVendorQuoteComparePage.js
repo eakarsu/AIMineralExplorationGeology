@@ -14,7 +14,7 @@ export default function AIVendorQuoteComparePage() {
         { key: 'quotes_text', label: 'Quotes (free-form)', type: 'textarea',
           placeholder: 'Vendor A: $12,500/day, mob $85,000. Vendor B: $11,800/day, mob $92,000...' },
       ]}
-      run={(v) => aiVendorQuoteCompare({ service: v.service, quotes_text: v.quotes_text })}
+      run={(v, requestOptions) => aiVendorQuoteCompare({ service: v.service, quotes_text: v.quotes_text }, requestOptions)}
     />
   );
 }

@@ -11,7 +11,7 @@ export default function AIPermitReadinessPage() {
       inputs={[
         { key: 'property_id', label: 'Property ID', placeholder: 'e.g. PROP-CA-001' },
       ]}
-      run={(v) => aiPermitReadiness({ property_id: v.property_id })}
+      run={(v, requestOptions) => aiPermitReadiness({ property_id: v.property_id }, requestOptions)}
     />
   );
 }

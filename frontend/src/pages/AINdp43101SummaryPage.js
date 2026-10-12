@@ -12,7 +12,7 @@ export default function AINdp43101SummaryPage() {
         { key: 'property_id', label: 'Property ID',
           placeholder: 'e.g. PROP-CA-001' },
       ]}
-      run={(v) => aiNdp43101Summary({ property_id: v.property_id })}
+      run={(v, requestOptions) => aiNdp43101Summary({ property_id: v.property_id }, requestOptions)}
     />
   );
 }

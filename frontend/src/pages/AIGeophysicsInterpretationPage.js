@@ -11,7 +11,7 @@ export default function AIGeophysicsInterpretationPage() {
       inputs={[
         { key: 'survey_id', label: 'Survey ID', placeholder: 'e.g. GP-2026-0001' },
       ]}
-      run={(v) => aiGeophysicsInterp({ survey_id: v.survey_id })}
+      run={(v, requestOptions) => aiGeophysicsInterp({ survey_id: v.survey_id }, requestOptions)}
     />
   );
 }

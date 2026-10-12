@@ -1,0 +1,41 @@
+{
+  "ndp-43-101-summary": [
+    "property_id"
+  ],
+  "permit-readiness": [
+    "property_id"
+  ],
+  "environmental-risk-brief": [
+    "property_id"
+  ],
+  "indigenous-engagement-plan": [
+    "community"
+  ],
+  "vendor-quote-compare": [
+    "service"
+  ],
+  "partner-pitch-draft": [
+    "property_id"
+  ],
+  "exploration-budget": [
+    "objective"
+  ],
+  "geophysics-interpretation": [
+    "survey_id"
+  ],
+  "resource-statement-draft": [
+    "property_id"
+  ],
+  "jurisdictional-risk": [
+    "country"
+  ],
+  "prospectivity-score": [
+    "property_id"
+  ],
+  "resource-block-confidence": [
+    "property_id"
+  ],
+  "block-model": [
+    "property_id"
+  ]
+}

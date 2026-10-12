@@ -12,7 +12,7 @@ export default function AIDrillTargetRankPage() {
         { key: 'budget_usd', label: 'Campaign Budget (USD)', type: 'number',
           placeholder: 'e.g. 4500000', defaultValue: 4500000 },
       ]}
-      run={(v) => aiDrillTargetRank({ budget_usd: Number(v.budget_usd || 0) })}
+      run={(v, requestOptions) => aiDrillTargetRank({ budget_usd: Number(v.budget_usd || 0) }, requestOptions)}
     />
   );
 }

@@ -11,7 +11,7 @@ export default function AIEnvironmentalRiskPage() {
       inputs={[
         { key: 'property_id', label: 'Property ID', placeholder: 'e.g. PROP-CD-006' },
       ]}
-      run={(v) => aiEnvironmentalRisk({ property_id: v.property_id })}
+      run={(v, requestOptions) => aiEnvironmentalRisk({ property_id: v.property_id }, requestOptions)}
     />
   );
 }

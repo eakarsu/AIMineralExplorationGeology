@@ -81,7 +81,7 @@ export const apiFetch = request;
 // Generic CRUD factory
 function crud(base) {
   return {
-    list:   ()       => request(`/${base}`),
+    list:   (options = {}) => request(`/${base}`, options),
     get:    (id)     => request(`/${base}/${id}`),
     create: (data)   => request(`/${base}`, { method: 'POST', body: JSON.stringify(data) }),
     update: (id, d)  => request(`/${base}/${id}`, { method: 'PUT',  body: JSON.stringify(d) }),
@@ -137,32 +137,32 @@ export const login = (email, password) =>
 export const getMe = () => request('/auth/me');
 
 // AI endpoints (16 verbs)
-export const aiAnomalyCluster        = (body) => request('/ai/anomaly-cluster',          { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiDrillTargetRank       = (body) => request('/ai/drill-target-rank',         { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiNdp43101Summary       = (body) => request('/ai/ndp-43-101-summary',        { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiAssayTrend            = (body) => request('/ai/assay-trend',               { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiExecutiveBrief        = (body) => request('/ai/executive-brief',           { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiPermitReadiness       = (body) => request('/ai/permit-readiness',          { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiEnvironmentalRisk     = (body) => request('/ai/environmental-risk-brief',  { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiIndigenousPlan        = (body) => request('/ai/indigenous-engagement-plan',{ method: 'POST', body: JSON.stringify(body || {}) });
-export const aiVendorQuoteCompare    = (body) => request('/ai/vendor-quote-compare',      { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiPartnerPitchDraft     = (body) => request('/ai/partner-pitch-draft',       { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiExplorationBudget     = (body) => request('/ai/exploration-budget',        { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiGeologistShiftPlan    = (body) => request('/ai/geologist-shift-plan',      { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiGeochemPathfinder     = (body) => request('/ai/geochem-pathfinder-detect', { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiGeophysicsInterp      = (body) => request('/ai/geophysics-interpretation', { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiResourceStatement     = (body) => request('/ai/resource-statement-draft',  { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiJurisdictionalRisk    = (body) => request('/ai/jurisdictional-risk',       { method: 'POST', body: JSON.stringify(body || {}) });
+export const aiAnomalyCluster        = (body, options = {}) => request('/ai/anomaly-cluster',          { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiDrillTargetRank       = (body, options = {}) => request('/ai/drill-target-rank',         { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiNdp43101Summary       = (body, options = {}) => request('/ai/ndp-43-101-summary',        { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiAssayTrend            = (body, options = {}) => request('/ai/assay-trend',               { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiExecutiveBrief        = (body, options = {}) => request('/ai/executive-brief',           { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiPermitReadiness       = (body, options = {}) => request('/ai/permit-readiness',          { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiEnvironmentalRisk     = (body, options = {}) => request('/ai/environmental-risk-brief',  { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiIndigenousPlan        = (body, options = {}) => request('/ai/indigenous-engagement-plan',{ ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiVendorQuoteCompare    = (body, options = {}) => request('/ai/vendor-quote-compare',      { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiPartnerPitchDraft     = (body, options = {}) => request('/ai/partner-pitch-draft',       { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiExplorationBudget     = (body, options = {}) => request('/ai/exploration-budget',        { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiGeologistShiftPlan    = (body, options = {}) => request('/ai/geologist-shift-plan',      { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiGeochemPathfinder     = (body, options = {}) => request('/ai/geochem-pathfinder-detect', { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiGeophysicsInterp      = (body, options = {}) => request('/ai/geophysics-interpretation', { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiResourceStatement     = (body, options = {}) => request('/ai/resource-statement-draft',  { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiJurisdictionalRisk    = (body, options = {}) => request('/ai/jurisdictional-risk',       { ...options, method: 'POST', body: JSON.stringify(body || {}) });
 
 // apply pass 7 — backlog AI verbs
-export const aiLithologyClassify       = (body) => request('/ai/lithology-classify',        { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiProspectivityScore      = (body) => request('/ai/prospectivity-score',       { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiResourceBlockConfidence = (body) => request('/ai/resource-block-confidence', { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiAssayAnomalyNarrate     = (body) => request('/ai/assay-anomaly-narrate',     { method: 'POST', body: JSON.stringify(body || {}) });
+export const aiLithologyClassify       = (body, options = {}) => request('/ai/lithology-classify',        { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiProspectivityScore      = (body, options = {}) => request('/ai/prospectivity-score',       { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiResourceBlockConfidence = (body, options = {}) => request('/ai/resource-block-confidence', { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiAssayAnomalyNarrate     = (body, options = {}) => request('/ai/assay-anomaly-narrate',     { ...options, method: 'POST', body: JSON.stringify(body || {}) });
 
 // 3D block-model
 export const getBlockModel   = (property_id) => request(`/ai/block-model?property_id=${encodeURIComponent(property_id)}`);
-export const buildBlockModel = (body) => request('/ai/block-model', { method: 'POST', body: JSON.stringify(body || {}) });
+export const buildBlockModel = (body, options = {}) => request('/ai/block-model', { ...options, method: 'POST', body: JSON.stringify(body || {}) });
 
 // Claim ledger (immutable history)
 export const claimLedgerApi = {

@@ -12,7 +12,7 @@ export default function AIIndigenousEngagementPage() {
         { key: 'community',   label: 'Community',   placeholder: 'e.g. Tahltan Central Government' },
         { key: 'property_id', label: 'Property ID', placeholder: 'e.g. PROP-CA-001' },
       ]}
-      run={(v) => aiIndigenousPlan({ community: v.community, property_id: v.property_id || undefined })}
+      run={(v, requestOptions) => aiIndigenousPlan({ community: v.community, property_id: v.property_id || undefined }, requestOptions)}
     />
   );
 }

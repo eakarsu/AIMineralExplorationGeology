@@ -14,7 +14,7 @@ export default function AIGeochemPathfinderPage() {
         { key: 'context_notes',  label: 'Context Notes', type: 'textarea',
           placeholder: 'e.g. Focus on epithermal gold pathfinders across Hawkeye and Ashanti.' },
       ]}
-      run={(v) => aiGeochemPathfinder({ target: v.target, context_notes: v.context_notes })}
+      run={(v, requestOptions) => aiGeochemPathfinder({ target: v.target, context_notes: v.context_notes }, requestOptions)}
     />
   );
 }

@@ -12,7 +12,7 @@ export default function AIPartnerPitchPage() {
         { key: 'property_id', label: 'Property ID', placeholder: 'e.g. PROP-CA-001' },
         { key: 'audience',    label: 'Audience',    placeholder: 'e.g. Tier-1 gold major exploration team' },
       ]}
-      run={(v) => aiPartnerPitchDraft({ property_id: v.property_id, audience: v.audience })}
+      run={(v, requestOptions) => aiPartnerPitchDraft({ property_id: v.property_id, audience: v.audience }, requestOptions)}
     />
   );
 }
