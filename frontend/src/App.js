@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'r
 import Sidebar from './components/Sidebar';
 import Topbar from './components/Topbar';
 import Dashboard from './pages/Dashboard';
+import FeaturePackPage from './pages/FeaturePackPage';
 
 // 18 CRUD pages
 import PropertiesPage              from './pages/PropertiesPage';
@@ -87,6 +88,7 @@ function ShellRoutes() {
             <Route path="/" element={<Dashboard />} />
 
             <Route path="/properties"               element={<PropertiesPage />} />
+            <Route path="/feature-pack"            element={<FeaturePackPage />} />
             <Route path="/claims"                   element={<ClaimsPage />} />
             <Route path="/drill-holes"              element={<DrillHolesPage />} />
             <Route path="/assay-results"            element={<AssayResultsPage />} />

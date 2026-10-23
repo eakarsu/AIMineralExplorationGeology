@@ -39,7 +39,11 @@ function buildCrud({ table, fields, idPrefix = '', webhookPrefix = null }) {
 
   router.get('/', async (req, res) => {
     try {
-      const r = await pool.query(`SELECT * FROM ${table} ORDER BY id DESC`);
+      const params = []; const where = [];
+      if (req.query.search) { params.push(`%${req.query.search}%`); where.push(`(${fields.map((f) => `${f}::text ILIKE $1`).join(' OR ')})`); }
+      for (const f of fields) if (req.query[f] !== undefined) { params.push(req.query[f]); where.push(`${f} = $${params.length}`); }
+      const sql = `SELECT * FROM ${table}${where.length ? ` WHERE ${where.join(' AND ')}` : ''} ORDER BY id DESC`;
+      const r = await pool.query(sql, params);
       res.json(r.rows);
     } catch (e) { res.status(500).json({ error: e.message }); }
   });

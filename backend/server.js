@@ -169,6 +169,7 @@ app.use('/api/custom-views', require('./routes/customViews'));
 app.use('/api/claim-ledger', require('./routes/claimLedger'));
 app.use('/api/core-chain-custody', require('./routes/coreChainCustody'));
 app.use('/api/exploration-workflow', require('./routes/explorationWorkflow'));
+app.use('/api/feature-pack', require('./featurePack.cjs').createFeaturePackRouter({ authenticate: authenticateToken }));
 
 app.use(/^\/api\/(?:gap-|external-feeds)/, (req,res,next) => {
   if (process.env.ENABLE_EXPERIMENTAL_ROUTES === 'true') return next();
